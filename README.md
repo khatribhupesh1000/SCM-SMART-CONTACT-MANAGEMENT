@@ -1,5 +1,5 @@
 # SCM-SMART-CONTACT-MANAGEMENT
-Smart Contact Manager (SCM) — Web Services Assignment
+Smart Contact Manager (SCM) — Web Services Assignment IIIT Vadodara
 
 ## Team Members
 
