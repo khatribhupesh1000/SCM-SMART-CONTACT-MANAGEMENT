@@ -1,0 +1,56 @@
+CS543 Assignment 4 — curl transcript
+
+Assumptions:
+- Assignment 4 Spring Boot service: http://localhost:8090
+- Existing SCM Contact API: http://localhost:8081/api/contacts
+- CONTACT_SERVICE_URL=http://localhost:8081/api/contacts
+
+1) Successful create
+
+curl -i -X POST http://localhost:8090/api/v1/emails \
+  -H 'Content-Type: application/json' \
+  -H 'Idempotency-Key: demo-key-001' \
+  -d '{"senderRef":"user-1","contactRef":"CONTACT_ID","subject":"Hello","bodyText":"Assignment 4 test"}'
+
+Expected: HTTP/1.1 201 Created
+Location: /api/v1/emails/EML-xxxxxxxx
+
+2) Same request with same idempotency key
+
+curl -i -X POST http://localhost:8090/api/v1/emails \
+  -H 'Content-Type: application/json' \
+  -H 'Idempotency-Key: demo-key-001' \
+  -d '{"senderRef":"user-1","contactRef":"CONTACT_ID","subject":"Hello","bodyText":"Assignment 4 test"}'
+
+Expected: HTTP/1.1 201 Created with the original emailRef/Location and no second record.
+
+3) Malformed body
+
+curl -i -X POST http://localhost:8090/api/v1/emails \
+  -H 'Content-Type: application/json' \
+  -H 'Idempotency-Key: demo-key-002' \
+  -d '{bad'
+
+Expected: HTTP/1.1 400 Bad Request
+
+4) Missing resource
+
+curl -i http://localhost:8090/api/v1/emails/EML-missing
+
+Expected: HTTP/1.1 404 Not Found
+
+5) State conflict
+
+# First cancel an existing queued email:
+curl -i -X POST http://localhost:8090/api/v1/emails/EML-xxxxxxxx/cancellation \
+  -H 'Content-Type: application/json' \
+  -d '{"status":"CANCELLED"}'
+
+Expected: HTTP/1.1 200 OK
+
+# Repeat the cancellation:
+curl -i -X POST http://localhost:8090/api/v1/emails/EML-xxxxxxxx/cancellation \
+  -H 'Content-Type: application/json' \
+  -d '{"status":"CANCELLED"}'
+
+Expected: HTTP/1.1 409 Conflict
