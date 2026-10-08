@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+               xmlns:qp="http://schemas.quickping-sms.com/messaging/v1">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Client</faultcode>
+      <faultstring>Destination number is not a valid mobile number</faultstring>
+      <faultactor>https://api.quickping-sms.com/soap/v1/messaging</faultactor>
+      <detail>
+        <qp:SmsFault>
+          <qp:Code>INVALID_MSISDN</qp:Code>
+          <qp:Message>The number +91987654 is too short for country code +91.</qp:Message>
+          <qp:Retryable>false</qp:Retryable>
+        </qp:SmsFault>
+      </detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>

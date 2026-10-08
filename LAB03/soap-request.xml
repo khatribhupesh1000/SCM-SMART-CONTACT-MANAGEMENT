@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+               xmlns:qp="http://schemas.quickping-sms.com/messaging/v1">
+  <soap:Header>
+    <qp:AuthHeader>
+      <qp:AccountId>SCM-DEMO-ACCOUNT</qp:AccountId>
+      <qp:ApiKey>DEMO_API_KEY</qp:ApiKey>
+    </qp:AuthHeader>
+  </soap:Header>
+  <soap:Body>
+    <qp:SendSmsRequest>
+      <qp:To>+919876543210</qp:To>
+      <qp:SenderId>SCMAPP</qp:SenderId>
+      <qp:Text>Hi Riya, this is a reminder from Smart Contact Manager: your meeting is tomorrow at 10:00 AM.</qp:Text>
+      <qp:ClientReference>contact-7d1e4b92-sms-0001</qp:ClientReference>
+      <qp:DeliveryReceipt>true</qp:DeliveryReceipt>
+    </qp:SendSmsRequest>
+  </soap:Body>
+</soap:Envelope>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+               xmlns:qp="http://schemas.quickping-sms.com/messaging/v1">
+  <soap:Body>
+    <qp:SendSmsResponse>
+      <qp:MessageId>qp-msg-5c82e0aa91</qp:MessageId>
+      <qp:Status>QUEUED</qp:Status>
+      <qp:Segments>1</qp:Segments>
+      <qp:ClientReference>contact-7d1e4b92-sms-0001</qp:ClientReference>
+      <qp:AcceptedAt>2026-10-08T14:32:05+05:30</qp:AcceptedAt>
+    </qp:SendSmsResponse>
+  </soap:Body>
+</soap:Envelope>

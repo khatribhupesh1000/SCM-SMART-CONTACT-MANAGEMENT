@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  partner.wsdl - QuickPing SMS Gateway (external partner of SCM, Smart Contact Manager)
+  Style: document/literal, SOAP 1.1 over HTTP.
+  Operation integrated by SCM: SendSms
+-->
+<wsdl:definitions
+    name="QuickPingMessagingService"
+    targetNamespace="http://schemas.quickping-sms.com/messaging/v1"
+    xmlns:tns="http://schemas.quickping-sms.com/messaging/v1"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+  <!-- 1. TYPES : the data that travels in the envelopes -->
+  <wsdl:types>
+    <xsd:schema targetNamespace="http://schemas.quickping-sms.com/messaging/v1"
+                elementFormDefault="qualified">
+
+      <!-- SOAP header: partner credentials -->
+      <xsd:element name="AuthHeader">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="AccountId" type="xsd:string"/>
+            <xsd:element name="ApiKey"    type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <!-- SOAP body: request -->
+      <xsd:element name="SendSmsRequest">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="To">
+              <xsd:simpleType>
+                <xsd:restriction base="xsd:string">
+                  <xsd:pattern value="\+[1-9][0-9]{7,14}"/> <!-- E.164 -->
+                </xsd:restriction>
+              </xsd:simpleType>
+            </xsd:element>
+            <xsd:element name="SenderId" type="xsd:string"/>
+            <xsd:element name="Text">
+              <xsd:simpleType>
+                <xsd:restriction base="xsd:string">
+                  <xsd:minLength value="1"/>
+                  <xsd:maxLength value="1600"/>
+                </xsd:restriction>
+              </xsd:simpleType>
+            </xsd:element>
+            <xsd:element name="ClientReference" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="DeliveryReceipt" type="xsd:boolean" minOccurs="0"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <!-- SOAP body: success response -->
+      <xsd:element name="SendSmsResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="MessageId"       type="xsd:string"/>
+            <xsd:element name="Status">
+              <xsd:simpleType>
+                <xsd:restriction base="xsd:string">
+                  <xsd:enumeration value="QUEUED"/>
+                  <xsd:enumeration value="SENT"/>
+                </xsd:restriction>
+              </xsd:simpleType>
+            </xsd:element>
+            <xsd:element name="Segments"        type="xsd:int"/>
+            <xsd:element name="ClientReference" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="AcceptedAt"      type="xsd:dateTime"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <!-- SOAP fault detail -->
+      <xsd:element name="SmsFault">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="Code">
+              <xsd:simpleType>
+                <xsd:restriction base="xsd:string">
+                  <xsd:enumeration value="AUTH_FAILED"/>
+                  <xsd:enumeration value="INVALID_MSISDN"/>
+                  <xsd:enumeration value="INSUFFICIENT_CREDIT"/>
+                  <xsd:enumeration value="RATE_LIMITED"/>
+                  <xsd:enumeration value="GATEWAY_UNAVAILABLE"/>
+                </xsd:restriction>
+              </xsd:simpleType>
+            </xsd:element>
+            <xsd:element name="Message"   type="xsd:string"/>
+            <xsd:element name="Retryable" type="xsd:boolean"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+    </xsd:schema>
+  </wsdl:types>
+
+  <!-- 2. MESSAGE : named parts that point at the elements above -->
+  <wsdl:message name="AuthHeaderMsg">
+    <wsdl:part name="auth" element="tns:AuthHeader"/>
+  </wsdl:message>
+  <wsdl:message name="SendSmsInput">
+    <wsdl:part name="parameters" element="tns:SendSmsRequest"/>
+  </wsdl:message>
+  <wsdl:message name="SendSmsOutput">
+    <wsdl:part name="parameters" element="tns:SendSmsResponse"/>
+  </wsdl:message>
+  <wsdl:message name="SendSmsFaultMsg">
+    <wsdl:part name="fault" element="tns:SmsFault"/>
+  </wsdl:message>
+
+  <!-- 3. PORTTYPE : the abstract interface (operations) -->
+  <wsdl:portType name="MessagingPortType">
+    <wsdl:operation name="SendSms">
+      <wsdl:documentation>Submit one SMS for delivery to a single E.164 number.</wsdl:documentation>
+      <wsdl:input  message="tns:SendSmsInput"/>
+      <wsdl:output message="tns:SendSmsOutput"/>
+      <wsdl:fault  name="SmsFault" message="tns:SendSmsFaultMsg"/>
+    </wsdl:operation>
+  </wsdl:portType>
+
+  <!-- 4. BINDING : SOAP 1.1 over HTTP, document/literal -->
+  <wsdl:binding name="MessagingSoapBinding" type="tns:MessagingPortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="SendSms">
+      <soap:operation soapAction="http://schemas.quickping-sms.com/messaging/v1/SendSms"/>
+      <wsdl:input>
+        <soap:header message="tns:AuthHeaderMsg" part="auth" use="literal"/>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="SmsFault">
+        <soap:fault name="SmsFault" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+  </wsdl:binding>
+
+  <!-- 5/6. SERVICE + PORT : where the binding lives -->
+  <wsdl:service name="QuickPingMessagingService">
+    <wsdl:port name="MessagingPort" binding="tns:MessagingSoapBinding">
+      <soap:address location="https://api.quickping-sms.com/soap/v1/messaging"/>
+    </wsdl:port>
+  </wsdl:service>
+
+</wsdl:definitions>
