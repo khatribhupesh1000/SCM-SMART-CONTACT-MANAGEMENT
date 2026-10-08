@@ -1,0 +1,22 @@
+CS543 Assignment 4 — test execution note
+========================================
+
+The test suite is implemented in:
+src/test/java/com/scm/assignment4/EmailControllerTest.java
+
+Tests included:
+1. createReturns201AndLocation
+2. sameIdempotencyKeyReturnsOriginal
+3. malformedBodyReturns400
+4. unknownIdReturns404
+5. stateConflictAfterCancellationReturns409
+6. dependencyUnavailableReturns503
+
+The execution environment used to prepare this submission does not contain Maven, so a real
+`mvn test` run could not be performed here. No fabricated PASS output is included.
+
+Run locally with:
+  mvn test
+
+Expected result after a successful local run:
+  Tests run: 6, Failures: 0, Errors: 0, Skipped: 0
