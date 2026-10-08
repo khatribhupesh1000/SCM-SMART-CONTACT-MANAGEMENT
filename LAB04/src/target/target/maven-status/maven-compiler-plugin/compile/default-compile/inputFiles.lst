@@ -1,0 +1,12 @@
+/Users/Bhupesh/Desktop/COLLEGE ASSIGNMENTS/web services/SCM_Assignment4_SpringBoot/src/main/java/com/scm/assignment4/service/EmailService.java
+/Users/Bhupesh/Desktop/COLLEGE ASSIGNMENTS/web services/SCM_Assignment4_SpringBoot/src/main/java/com/scm/assignment4/controller/EmailController.java
+/Users/Bhupesh/Desktop/COLLEGE ASSIGNMENTS/web services/SCM_Assignment4_SpringBoot/src/main/java/com/scm/assignment4/dto/CreateEmailRequest.java
+/Users/Bhupesh/Desktop/COLLEGE ASSIGNMENTS/web services/SCM_Assignment4_SpringBoot/src/main/java/com/scm/assignment4/store/EmailStore.java
+/Users/Bhupesh/Desktop/COLLEGE ASSIGNMENTS/web services/SCM_Assignment4_SpringBoot/src/main/java/com/scm/assignment4/dto/Problem.java
+/Users/Bhupesh/Desktop/COLLEGE ASSIGNMENTS/web services/SCM_Assignment4_SpringBoot/src/main/java/com/scm/assignment4/Assignment4Application.java
+/Users/Bhupesh/Desktop/COLLEGE ASSIGNMENTS/web services/SCM_Assignment4_SpringBoot/src/main/java/com/scm/assignment4/exception/GlobalExceptionHandler.java
+/Users/Bhupesh/Desktop/COLLEGE ASSIGNMENTS/web services/SCM_Assignment4_SpringBoot/src/main/java/com/scm/assignment4/client/ContactClient.java
+/Users/Bhupesh/Desktop/COLLEGE ASSIGNMENTS/web services/SCM_Assignment4_SpringBoot/src/main/java/com/scm/assignment4/model/EmailRecord.java
+/Users/Bhupesh/Desktop/COLLEGE ASSIGNMENTS/web services/SCM_Assignment4_SpringBoot/src/main/java/com/scm/assignment4/exception/DependencyUnavailableException.java
+/Users/Bhupesh/Desktop/COLLEGE ASSIGNMENTS/web services/SCM_Assignment4_SpringBoot/src/main/java/com/scm/assignment4/exception/ApiException.java
+/Users/Bhupesh/Desktop/COLLEGE ASSIGNMENTS/web services/SCM_Assignment4_SpringBoot/src/main/java/com/scm/assignment4/dto/ChangeStatusRequest.java
