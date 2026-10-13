@@ -1,0 +1,652 @@
+openapi: 3.0.3
+info:
+  title: SCM Contact Share Service — Assignment 6 (Spring Boot)
+  version: 1.2.0
+  description: Assignment 6 hardening of the same SCM contact-share service from Assignment 5. No new service is
+    introduced. Failures use application/problem+json.
+servers:
+- url: http://localhost:8090
+security:
+- DemoBearer: []
+tags:
+- name: Contact Shares
+paths:
+  /v1/contact-shares:
+    options:
+      security: []
+      operationId: optionsContactShares
+      summary: Advertise collection methods and CORS policy
+      responses:
+        '204':
+          description: Allowed methods returned in Allow header.
+          headers:
+            Allow:
+              schema:
+                type: string
+              description: Supported methods for this resource.
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+    get:
+      operationId: listContactShares
+      summary: Filter, sort and paginate contact-share requests
+      parameters:
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - pending
+          - cancelled
+      - in: query
+        name: sort
+        schema:
+          type: string
+          enum:
+          - created_at
+          - updated_at
+          - recipient_email
+          - status
+          default: created_at
+      - in: query
+        name: order
+        schema:
+          type: string
+          enum:
+          - asc
+          - desc
+          default: asc
+      - in: query
+        name: limit
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      - in: query
+        name: offset
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+      - $ref: '#/components/parameters/AcceptJson'
+      - $ref: '#/components/parameters/ClientId'
+      responses:
+        '200':
+          description: Filtered page of contact-share requests.
+          headers:
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactShareList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '406':
+          $ref: '#/components/responses/NotAcceptable'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+              description: Seconds to wait before retrying.
+        '500':
+          description: Unexpected server failure; internal details are not returned.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+    post:
+      operationId: createContactShare
+      summary: Create a share request for an existing SCM contact
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - $ref: '#/components/parameters/ClientId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateContactShareRequest'
+      responses:
+        '201':
+          description: Created; retry with the same key returns the original resource.
+          headers:
+            Location:
+              schema:
+                type: string
+                format: uri-reference
+            ETag:
+              schema:
+                type: string
+            Idempotency-Replayed:
+              schema:
+                type: string
+                enum:
+                - 'true'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactShare'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '406':
+          $ref: '#/components/responses/NotAcceptable'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+              description: Seconds to wait before retrying.
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+              description: Seconds to wait before retrying.
+        '500':
+          description: Unexpected server failure; internal details are not returned.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '405':
+          description: HTTP method is not supported for this resource.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '415':
+          description: Request Content-Type is not supported.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /v1/contact-shares/{shareId}:
+    parameters:
+    - $ref: '#/components/parameters/ShareId'
+    options:
+      security: []
+      operationId: optionsContactShare
+      summary: Advertise item methods and CORS policy
+      responses:
+        '204':
+          description: Supported methods returned in Allow header.
+          headers:
+            Allow:
+              schema:
+                type: string
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+    get:
+      operationId: getContactShare
+      summary: Read one contact-share request
+      parameters:
+      - name: If-None-Match
+        in: header
+        required: false
+        schema:
+          type: string
+      - $ref: '#/components/parameters/ClientId'
+      responses:
+        '200':
+          description: Resource representation and validator.
+          headers:
+            ETag:
+              schema:
+                type: string
+            Cache-Control:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactShare'
+        '304':
+          description: Cached representation is still current; no body.
+          headers:
+            ETag:
+              schema:
+                type: string
+            Cache-Control:
+              schema:
+                type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '406':
+          $ref: '#/components/responses/NotAcceptable'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+              description: Seconds to wait before retrying.
+        '500':
+          description: Unexpected server failure; internal details are not returned.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+    patch:
+      operationId: updateContactShare
+      summary: Partially update a pending contact-share request
+      parameters:
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+        description: Current ETag; stale validators are rejected with 412.
+      - $ref: '#/components/parameters/ClientId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateContactShareRequest'
+      responses:
+        '200':
+          description: Updated representation and new ETag.
+          headers:
+            ETag:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactShare'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '412':
+          description: If-Match did not match the current ETag.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '428':
+          description: If-Match header is required.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+              description: Seconds to wait before retrying.
+        '422':
+          description: Input fields or domain rules are invalid.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Unexpected server failure; internal details are not returned.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '405':
+          description: HTTP method is not supported for this resource.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '415':
+          description: Request Content-Type is not supported.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+    delete:
+      operationId: deleteContactShare
+      summary: Delete a contact-share request
+      parameters:
+      - $ref: '#/components/parameters/ClientId'
+      responses:
+        '204':
+          description: Deleted; response has no body.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+              description: Seconds to wait before retrying.
+        '500':
+          description: Unexpected server failure; internal details are not returned.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /v1/contact-shares/{shareId}/cancellation:
+    parameters:
+    - $ref: '#/components/parameters/ShareId'
+    options:
+      security: []
+      operationId: optionsContactShareCancellation
+      summary: Advertise cancellation methods
+      responses:
+        '204':
+          description: Supported methods returned in Allow header.
+          headers:
+            Allow:
+              schema:
+                type: string
+    post:
+      operationId: cancelContactShare
+      summary: Cancel a pending share request
+      parameters:
+      - $ref: '#/components/parameters/ClientId'
+      responses:
+        '200':
+          description: Cancelled share request.
+          headers:
+            ETag:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactShare'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+              description: Seconds to wait before retrying.
+        '500':
+          description: Unexpected server failure; internal details are not returned.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '405':
+          description: HTTP method is not supported for this resource.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '415':
+          description: Request Content-Type is not supported.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+components:
+  securitySchemes:
+    DemoBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: opaque-demo-token
+      description: Header handling only; no real token issuance system is included.
+  parameters:
+    ShareId:
+      name: shareId
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 1
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 128
+    ClientId:
+      name: X-Client-ID
+      in: header
+      required: false
+      schema:
+        type: string
+        maxLength: 100
+      description: Demo per-client rate-limit key; production should derive this from authenticated identity.
+    AcceptJson:
+      name: Accept
+      in: header
+      required: false
+      schema:
+        type: string
+        default: application/json
+  schemas:
+    CreateContactShareRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - contactRef
+      - recipientEmail
+      properties:
+        contactRef:
+          type: string
+          minLength: 1
+        recipientEmail:
+          type: string
+          format: email
+        message:
+          type: string
+          maxLength: 500
+          default: ''
+    UpdateContactShareRequest:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        recipientEmail:
+          type: string
+          format: email
+        message:
+          type: string
+          maxLength: 500
+    ContactShare:
+      type: object
+      required:
+      - share_id
+      - contact_ref
+      - recipient_email
+      - message
+      - status
+      - created_at
+      - updated_at
+      properties:
+        share_id:
+          type: string
+        contact_ref:
+          type: string
+        recipient_email:
+          type: string
+          format: email
+        message:
+          type: string
+        status:
+          type: string
+          enum:
+          - pending
+          - cancelled
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        cancelled_at:
+          type: string
+          format: date-time
+          nullable: true
+    ContactShareList:
+      type: object
+      required:
+      - items
+      - count
+      - total
+      - limit
+      - offset
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContactShare'
+        count:
+          type: integer
+        total:
+          type: integer
+        limit:
+          type: integer
+        offset:
+          type: integer
+    Problem:
+      type: object
+      required:
+      - type
+      - title
+      - status
+      - detail
+      - errors
+      properties:
+        type:
+          type: string
+          description: 'Stable SCM problem type: invalid-request, invalid-share-request, contact-unavailable, share-not-found,
+            illegal-transition, idempotency-conflict, invalid-share-filter, authentication-required, not-acceptable,
+            rate-limit-exceeded, contact-service-error, dependency-unavailable, stale-resource-version, precondition-required,
+            method-not-allowed, unsupported-media-type, internal-error.'
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        errors:
+          type: array
+          description: All field-level validation errors; empty for errors not tied to input fields.
+          items:
+            $ref: '#/components/schemas/FieldViolation'
+    FieldViolation:
+      type: object
+      required:
+      - field
+      - reason
+      properties:
+        field:
+          type: string
+        reason:
+          type: string
+  responses:
+    BadRequest:
+      description: Invalid body or header.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Unauthorized:
+      description: Missing or invalid bearer token.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    NotFound:
+      description: Resource not found.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Conflict:
+      description: State or idempotency conflict.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Unprocessable:
+      description: Domain refuses the request.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    NotAcceptable:
+      description: Only JSON is available.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    RateLimited:
+      description: Per-client request budget exceeded.
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+          description: Seconds to wait before retrying.
+        X-RateLimit-Limit:
+          schema:
+            type: integer
+        X-RateLimit-Remaining:
+          schema:
+            type: integer
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    BadGateway:
+      description: Invalid or rejected downstream response.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Unavailable:
+      description: Contact Service unavailable.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+          description: Seconds to wait before retrying.

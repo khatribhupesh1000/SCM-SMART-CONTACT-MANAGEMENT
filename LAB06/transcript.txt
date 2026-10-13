@@ -1,0 +1,18 @@
+# Assignment 6 transcript checklist — template, not actual output
+# Start SCM Contact Service on 8082 and Assignment 6 service on 8090.
+# Use: CONTACT_REF='real-contact-id' ./capture-curl-transcript.sh
+# To make the rate-limit example deterministic, start with RATE_LIMIT_PER_MINUTE=2.
+# The script writes actual terminal output to transcript-actual.txt.
+
+Cases:
+- POST create: 201 + Location + JSON
+- Idempotent retry with same key/body
+- Invalid multiple fields: 422 + errors[]
+- Malformed JSON: 400 Problem Details
+- Unknown share: 404 Problem Details
+- Illegal transition: second cancellation 409
+- Accept: application/xml: 406 Problem Details
+- Missing auth: 401 Problem Details
+- 503 downstream failure: Retry-After (test by stopping Contact Service)
+- 304 If-None-Match and 412 stale If-Match regressions
+- 429 rate limit + Retry-After
