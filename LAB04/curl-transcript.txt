@@ -1,0 +1,10 @@
+# HTTP transcript capture checklist — not actual output
+
+Start the SCM Contact Service and this Spring Boot service, then run the commands in `capture-curl-transcript.sh`.
+Replace `cnt-existing-contact-id` with a real SCM contact ID. Save the resulting terminal output as `curl-transcript-actual.txt`.
+
+Required cases:
+- Create -> 201 Created and Location
+- Repeat create with same Idempotency-Key -> original resource
+- Malformed JSON -> 400
+- Missing resource -> 404

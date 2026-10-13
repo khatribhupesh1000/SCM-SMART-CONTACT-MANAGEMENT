@@ -1,0 +1,182 @@
+openapi: 3.0.3
+info:
+  title: SCM Contact Share Service — Assignment 4 (Spring Boot)
+  version: 1.0.0
+  description: REST API for creating, retrieving, listing, and cancelling SCM contact-share requests.
+servers:
+  - url: http://localhost:8090
+    description: Local development
+tags:
+  - name: Contact Shares
+paths:
+  /v1/contact-shares:
+    get:
+      tags: [Contact Shares]
+      operationId: listContactShares
+      summary: List contact-share requests
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema: { type: string, enum: [pending, cancelled] }
+          description: Filter by current status.
+      responses:
+        '200':
+          description: Filtered list.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ContactShareList' }
+        '422':
+          description: Unsupported status filter.
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+    post:
+      tags: [Contact Shares]
+      operationId: createContactShare
+      summary: Create a contact-share request
+      description: Requires an Idempotency-Key. Validates the referenced contact through the SCM Contact Service.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateContactShareRequest'
+      responses:
+        '201':
+          description: Contact-share request created or original idempotent result replayed.
+          headers:
+            Location:
+              schema: { type: string }
+              description: Relative URI of the created contact-share request.
+            Idempotency-Replayed:
+              schema: { type: string, enum: ['true'] }
+              description: Present when the original response is replayed.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ContactShare' }
+        '400':
+          description: Malformed JSON, invalid request fields, or missing idempotency key.
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+        '409':
+          description: Idempotency key reused with a different request.
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+        '422':
+          description: Referenced contact does not exist.
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+        '502':
+          description: Invalid or rejected downstream response.
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+        '503':
+          description: Contact Service unavailable.
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+  /v1/contact-shares/{shareId}:
+    get:
+      tags: [Contact Shares]
+      operationId: getContactShare
+      summary: Get one contact-share request
+      parameters:
+        - $ref: '#/components/parameters/ShareId'
+      responses:
+        '200':
+          description: Contact-share request.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ContactShare' }
+        '404':
+          description: Share request not found.
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+  /v1/contact-shares/{shareId}/cancellation:
+    post:
+      tags: [Contact Shares]
+      operationId: cancelContactShare
+      summary: Cancel a pending contact-share request
+      parameters:
+        - $ref: '#/components/parameters/ShareId'
+      responses:
+        '200':
+          description: Request is cancelled; repeating cancellation returns the same state.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ContactShare' }
+        '404':
+          description: Share request not found.
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+        '409':
+          description: Request is in a state that cannot be cancelled.
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+components:
+  parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema: { type: string, minLength: 1, maxLength: 128 }
+    ShareId:
+      name: shareId
+      in: path
+      required: true
+      schema: { type: string, minLength: 1 }
+  schemas:
+    CreateContactShareRequest:
+      type: object
+      additionalProperties: false
+      required: [contactRef, recipientEmail]
+      properties:
+        contactRef:
+          type: string
+          minLength: 1
+          description: ID of an existing contact in SCM Contact Service.
+        recipientEmail:
+          type: string
+          format: email
+        message:
+          type: string
+          maxLength: 500
+          default: ''
+    ContactShare:
+      type: object
+      required: [share_id, contact_ref, recipient_email, message, status, created_at, updated_at]
+      properties:
+        share_id: { type: string }
+        contact_ref: { type: string }
+        recipient_email: { type: string, format: email }
+        message: { type: string }
+        status: { type: string, enum: [pending, cancelled] }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+        cancelled_at: { type: string, format: date-time, nullable: true }
+    ContactShareList:
+      type: object
+      required: [items, count]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/ContactShare' }
+        count: { type: integer, minimum: 0 }
+    Problem:
+      type: object
+      required: [type, title, status, detail]
+      properties:
+        type: { type: string, format: uri-reference }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
