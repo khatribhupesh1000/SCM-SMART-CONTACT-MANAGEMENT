@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tns="http://scm.enterprise.io/ws/telecom">
+  <soap:Header/>
+  <soap:Body>
+    <tns:VerifyPhoneNumberResponse>
+      <tns:carrier>Example Carrier</tns:carrier>
+      <tns:lineType>mobile</tns:lineType>
+      <tns:valid>true</tns:valid>
+    </tns:VerifyPhoneNumberResponse>
+  </soap:Body>
+</soap:Envelope>
