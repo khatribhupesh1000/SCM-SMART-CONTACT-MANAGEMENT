@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="TelecomDirectoryService"
+             targetNamespace="http://scm.enterprise.io/ws/telecom"
+             xmlns="http://schemas.xmlsoap.org/wsdl/"
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+             xmlns:tns="http://scm.enterprise.io/ws/telecom"
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <types>
+    <xsd:schema targetNamespace="http://scm.enterprise.io/ws/telecom">
+      <xsd:element name="VerifyPhoneNumberRequest">
+        <xsd:complexType><xsd:sequence>
+          <xsd:element name="phoneNumber" type="xsd:string"/>
+          <xsd:element name="countryCode" type="xsd:string"/>
+        </xsd:sequence></xsd:complexType>
+      </xsd:element>
+      <xsd:element name="VerifyPhoneNumberResponse">
+        <xsd:complexType><xsd:sequence>
+          <xsd:element name="carrier" type="xsd:string"/>
+          <xsd:element name="lineType" type="xsd:string"/>
+          <xsd:element name="valid" type="xsd:boolean"/>
+        </xsd:sequence></xsd:complexType>
+      </xsd:element>
+    </xsd:schema>
+  </types>
+  <message name="VerifyNumberRequest">
+    <part name="parameters" element="tns:VerifyPhoneNumberRequest"/>
+  </message>
+  <message name="VerifyNumberResponse">
+    <part name="parameters" element="tns:VerifyPhoneNumberResponse"/>
+  </message>
+  <portType name="TelecomDirectoryPortType">
+    <operation name="VerifyPhoneNumber">
+      <input message="tns:VerifyNumberRequest"/>
+      <output message="tns:VerifyNumberResponse"/>
+    </operation>
+  </portType>
+  <binding name="TelecomDirectorySoapBinding" type="tns:TelecomDirectoryPortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="VerifyPhoneNumber">
+      <soap:operation soapAction="http://scm.enterprise.io/ws/telecom/VerifyPhoneNumber"/>
+      <input><soap:body use="literal"/></input>
+      <output><soap:body use="literal"/></output>
+    </operation>
+  </binding>
+  <service name="TelecomDirectoryService">
+    <port name="TelecomDirectoryPort" binding="tns:TelecomDirectorySoapBinding">
+      <soap:address location="http://localhost:8086/v1/soap/mock-endpoint"/>
+    </port>
+  </service>
+</definitions>
